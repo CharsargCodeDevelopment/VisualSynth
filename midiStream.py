@@ -19,12 +19,14 @@ def noteToFreq(note):
 def GetInputs(channel = -1):
 
     for msg in inport.iter_pending():
-        if msg.channel == channel or channel == -1:
-            if msg.type == "note_on":
-                if msg.velocity != 0:
-                    notes.append(msg.note)
-            elif msg.type  == "note_off":
-                if msg.note in notes:
-                    notes.remove(msg.note)
+        if msg.type not in ["clock"]:
+            if msg.channel == channel or channel == -1:
+                if msg.type == "note_on":
+                    if msg.velocity != 0:
+                        notes.append(msg.note)
+                elif msg.type  == "note_off":
+                    if msg.note in notes:
+                        notes.remove(msg.note)
         #print(msg)
     #print(notes)
+
