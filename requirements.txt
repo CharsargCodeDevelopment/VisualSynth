@@ -1,0 +1,6 @@
+lupa
+mido
+python-rtmidi
+sounddevice
+numpy
+pillow
