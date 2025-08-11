@@ -12,7 +12,25 @@ import time
 import audioStream
 import midiStream
 
-ModularInterface.UI.ActivateCore(core = "pygame")
+
+
+
+#visuals = False
+
+UICore = "pygame"
+
+save_images = True
+
+#if not visuals:
+ #   UICore = None
+
+
+
+
+if save_images == False:
+    ModularInterface.UI.ActivateCore(core = UICore)
+else:
+    ModularInterface.UI.ActivateCore(core = "tk")
 ModularLuaInterface.LoadCore.ActivateCore()
 
 
@@ -58,11 +76,16 @@ positions = []
 LeftChannel = []
 RightChannel = []
 
+visuals = False
 
 
-VisualAudioPreview = ModularInterface.Core.Window(width = 1024,height = 1024)
-ModularInterface.Core.AddImage(VisualAudioPreview,1024,1024)
+if visuals:
 
+    VisualAudioPreview = ModularInterface.Core.Window(width = 1024,height = 1024)
+    ModularInterface.Core.AddImage(VisualAudioPreview,1024,1024)
+elif save_images:
+    VisualAudioPreview = ModularInterface.Core.Window(width = 1024,height = 1024)
+    ModularInterface.Core.AddImage(VisualAudioPreview,1024,1024)
 
 running = True
 
@@ -92,15 +115,57 @@ activeFrequencies = [440]
 
 enable_midi = True
 
-VisualAudioPreview.update()
+from_file = True
+
+to_file = True
+
+
+
+if visuals:
+
+    VisualAudioPreview.update()
 
 #channel = int(input("Enter Channel: "))
 channel = -1
-midiStream.Activate()
+
+if not from_file:
+    midiStream.Activate()
+else:
+    import midiStreamFile
 
 
+
+if to_file:
+    import audioOutputStream
+    audioOutputStream.mode = "numpy"
+    audioOutputStream.Activate()
+else:
+    audioStream.Activate()
+
+
+if to_file:
+    soundBufferSize = 4096
+    soundBufferSize = 2048
+    #soundBufferSize = 8192
+    #soundBufferSize = 64
+
+
+
+if save_images:
+    import OutputImage
+
+ImageIndex = 0
 while running:
     inputTimer+=1
+    if from_file:
+        output = midiStreamFile.GetInputs(t)
+        midiStream.notes = list(output["notes"])
+        if output == None:
+            
+            
+            running = False
+            break
+        #print(midiStream.notes)
     if inputTimer > 1 and enable_midi:
         inputTimer=0
         #midiStream.GetInputs(channel = channel)
@@ -153,8 +218,11 @@ while running:
         playStart = time.time()
         
         #audioStream.PlaySample(LeftChannel,writeTime)
+        if to_file:
+            audioOutputStream.SaveSample(LeftChannel,RightChannel)
+        else:
+            audioStream.PlaySample(LeftChannel,RightChannel)
         
-        audioStream.PlaySample(LeftChannel,RightChannel)
         #print(time.time()-playStart)
         #print(writeTime,len(LeftChannel)/44100)
         LeftChannel = []
@@ -170,20 +238,29 @@ while running:
         frameTimer = time.time()
 
     i+=1
-    if i > 1000 and True:
-        i=0
-        VisualAudioPreview.ImageManager.fill_image((0,0,0))
-
+    if i > 1000 and True and (visuals or save_images):
         renderPoses = (set(positions))
+        i=0
+        if visuals:
+            VisualAudioPreview.ImageManager.fill_image((0,0,0))
 
-        #print(len(renderPoses))
+            
 
-        ModularInterface.Core.DrawImage(IM = VisualAudioPreview.ImageManager,positions=renderPoses,color=(0,255,0))
-        VisualAudioPreview.ImageManager.update_image()
+            #print(len(renderPoses))
+
+            ModularInterface.Core.DrawImage(IM = VisualAudioPreview.ImageManager,positions=renderPoses,color=(0,255,0))
+        if save_images:
+            ImageIndex+=1
+            im = OutputImage.DrawImage(positions)
+            im.save(f"output/{ImageIndex}.png")
+
+        if visuals:
+            VisualAudioPreview.ImageManager.update_image()
         
 
-        #print("test")
+            #print("test")
         
-        VisualAudioPreview.update()
+            VisualAudioPreview.update()
     
-
+if to_file:
+    audioOutputStream.DeActivate()
