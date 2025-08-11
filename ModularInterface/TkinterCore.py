@@ -5,7 +5,7 @@ class Window:
     """
     A class to create a basic Tkinter window.
     """
-    def __init__(self,title = "ModularInterface Window"):
+    def __init__(self,title = "ModularInterface Window",width = 400, height = 300):
         """
         Initializes the main application window and its widgets.
         """
@@ -16,7 +16,7 @@ class Window:
         self.root.title(title)
 
         # Set the size of the window (width x height)
-        self.root.geometry("400x300")
+        self.root.geometry(f"{width}x{height}")
 
         # Create a simple label widget and add it to the window
         #self.label = tk.Label(self.root, text="Hello, Tkinter!", font=("Helvetica", 16))
@@ -30,6 +30,8 @@ class Window:
         #print("test")
         self.root.update()
         self.root.after(2,self.ensure_no_freeze)
+    def update(self):
+        self.root.update()
         
 
         

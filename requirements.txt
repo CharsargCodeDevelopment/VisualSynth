@@ -4,3 +4,4 @@ python-rtmidi
 sounddevice
 numpy
 pillow
+pygame

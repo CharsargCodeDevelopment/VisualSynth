@@ -8,6 +8,11 @@ def ActivateCore(core = "tk"):
 
         
         ModularInterface.Core = ModularInterface.TkinterCore
+    if core == "pygame":
+        import ModularInterface.PygameCore
+
+        
+        ModularInterface.Core = ModularInterface.PygameCore
 
 
 def FillImage(IM = None,color = (0,0,0)):

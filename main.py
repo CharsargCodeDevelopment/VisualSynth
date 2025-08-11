@@ -12,7 +12,7 @@ import time
 import audioStream
 import midiStream
 
-ModularInterface.UI.ActivateCore()
+ModularInterface.UI.ActivateCore(core = "pygame")
 ModularLuaInterface.LoadCore.ActivateCore()
 
 
@@ -47,9 +47,12 @@ Preview.root.update()
 
 
 targetSampleRate = 44100
-drawBufferSize = 1024
+drawBufferSize = 2048
 soundBufferSize = int(targetSampleRate*1)
 soundBufferSize = 1136
+soundBufferSize = audioStream.blockSize
+#soundBufferSize = 2048
+#soundBufferSize = 640
 #soundBufferSize = 1024
 positions = []
 LeftChannel = []
@@ -57,7 +60,7 @@ RightChannel = []
 
 
 
-VisualAudioPreview = ModularInterface.Core.Window()
+VisualAudioPreview = ModularInterface.Core.Window(width = 1024,height = 1024)
 ModularInterface.Core.AddImage(VisualAudioPreview,1024,1024)
 
 
@@ -85,20 +88,22 @@ frameTimer = time.time()
 i = 0
 inputTimer = 0
 
-activeFrequencies = []
+activeFrequencies = [440]
 
 enable_midi = True
 
-VisualAudioPreview.root.update()
+VisualAudioPreview.update()
 
-channel = int(input("Enter Channel: "))
+#channel = int(input("Enter Channel: "))
+channel = -1
+midiStream.Activate()
 
 
 while running:
     inputTimer+=1
-    if inputTimer > 500 and enable_midi:
+    if inputTimer > 1 and enable_midi:
         inputTimer=0
-        midiStream.GetInputs(channel = channel)
+        #midiStream.GetInputs(channel = channel)
         activeFrequencies = []
         #print(set(midiStream.notes))
         for note in set(midiStream.notes):
@@ -118,24 +123,27 @@ while running:
     
     #print(deltaTime,len(positions))
     #t+=deltaTime
-    t+= minGap
+    if audioStream.GenerateAudio():
+        t+= minGap
 
 
-    l,r = math.sin(math.radians(t*440*360)),math.cos(math.radians(t*440*360))
-    #l,r = 0,0
-    l,r = (GenerationFunction(t,activeFrequencies))
-    x,y = l,r
-    l = l*volume
-    r = r*volume
-    l = max(-1,min(1,l))
-    r = max(-1,min(1,r))
+        l,r = math.sin(math.radians(t*440*360)),math.cos(math.radians(t*440*360))
+        #l,r = 0,0
+        l,r = (GenerationFunction(t,activeFrequencies))
+        x,y = l,r
+        l = l*volume
+        r = r*volume
+        l = max(-1,min(1,l))
+        r = max(-1,min(1,r))
 
-    LeftChannel.append((l))
-    RightChannel.append((r))
     
-    #x,y = x+1,y+1
-    x,y = (int(scale*x)+512,int(scale*y)+512)
-    positions.append((x,y))
+
+        LeftChannel.append((l))
+        RightChannel.append((r))
+    
+        #x,y = x+1,y+1
+        x,y = (int(scale*x)+512,int(scale*y)+512)
+        positions.append((x,y))
     while len(positions) > drawBufferSize:
         positions.pop(0)
     #if len(positions)-1 > drawBufferSize:
@@ -161,6 +169,9 @@ while running:
         #print(time.time()-frameTimer)
         frameTimer = time.time()
 
+    i+=1
+    if i > 1000 and True:
+        i=0
         VisualAudioPreview.ImageManager.fill_image((0,0,0))
 
         renderPoses = (set(positions))
@@ -170,10 +181,9 @@ while running:
         ModularInterface.Core.DrawImage(IM = VisualAudioPreview.ImageManager,positions=renderPoses,color=(0,255,0))
         VisualAudioPreview.ImageManager.update_image()
         
-        i+=1
-        if i > 1:
-            #print("test")
-            i=0
-            VisualAudioPreview.root.update()
+
+        #print("test")
+        
+        VisualAudioPreview.update()
     
 
