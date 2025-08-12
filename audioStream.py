@@ -4,8 +4,6 @@ import numpy as np
 
 import queue
 
-
-
 # Create a queue for our audio data
 q = queue.Queue(maxsize=2)
 
@@ -101,13 +99,11 @@ def PlaySample(samplesL,samplesR):
     #sd.play(samples,44100)
 
 
+stream = sd.OutputStream(callback=callback, samplerate=44100, channels=2,latency = 0.1)
 
-def Activate():
-    stream = sd.OutputStream(callback=callback, samplerate=44100, channels=2,latency = 0.1)
-    
-    stream.start()
-    print(stream.blocksize)
-    #QueuePut(np.sin(2 * np.pi * 440 * np.linspace(0, 2, 44100 * 2)))  # 2 seconds of a sine wave
+stream.start()
+print(stream.blocksize)
+#QueuePut(np.sin(2 * np.pi * 440 * np.linspace(0, 2, 44100 * 2)))  # 2 seconds of a sine wave
 
 
 print(pad_list([0,1,2,3],2))
